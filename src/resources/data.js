@@ -28,3 +28,20 @@ exports.createAuthor = (obj) => {
   authorsIndex[obj.id] = obj
   return obj
 }
+
+// Seed the database
+(() => {
+  const author = exports.createAuthor({
+    firstName: 'Jack',
+    lastName: 'Bliss'
+  })
+  exports.createBook({
+    title: 'How GraphQL changed the world',
+    authorId: author.id,
+    isbn: '1337',
+    pageCount: 42,
+    rating: 5,
+    published: true,
+    tags: [ 'graphql' ]
+  })
+})()
