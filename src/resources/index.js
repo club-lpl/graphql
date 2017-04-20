@@ -1,6 +1,6 @@
 'use strict'
 
-const gql = require('graphql-tag')
+const { stripIndent: gql } = require('common-tags')
 const { merge } = require('lodash')
 const { makeExecutableSchema } = require('graphql-tools')
 const author = require('./author')
@@ -8,9 +8,11 @@ const book = require('./book')
 
 const rootSchema = gql`
   type Query {
+    # Query the health of the service
     health: String
   }
   type Mutation {
+    # Echo a message back to yourself
     echo(msg: String): String
   }
   schema {

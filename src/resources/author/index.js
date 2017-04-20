@@ -1,6 +1,6 @@
 'use strict'
 
-const gql = require('graphql-tag')
+const { stripIndent: gql } = require('common-tags')
 const data = require('../data')
 
 exports.schema = gql`
