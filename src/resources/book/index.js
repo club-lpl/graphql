@@ -4,10 +4,14 @@ const { stripIndent: gql } = require('common-tags')
 const data = require('../data')
 
 exports.schema = gql`
+  # ## Get rekt
+  # - How to get Rekt
+  # - Probably Not
+  # Lets be honest
   type Book {
     id: ID!
     title: String!
-    author: Author!
+    author: Author
     isbn: String
     pageCount: Int
     rating: Int
@@ -39,7 +43,7 @@ exports.resolvers = {
       return data.getBooks()
     },
     book (obj, args, ctx) {
-      return data.getBook(args.id)
+      return data.getBook(args.id, ctx.user)
     }
   },
   Mutation: {
@@ -48,8 +52,12 @@ exports.resolvers = {
     }
   },
   Book: {
-    author (obj) {
-      return data.getAuthor(obj.authorId)
+    author (obj, args, ctx) {
+      return ctx.authorsLoader.load(obj.authorId)
+    },
+
+    rating (obj, args, ctx) {
+      return obj.rating
     }
   }
 }

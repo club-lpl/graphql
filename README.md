@@ -35,11 +35,11 @@ Then open up [http://localhost:8000/graphiql](http://localhost:8000/graphiql)
 
 _Not in any particular order_
 
-- [ ] Data Loader
+- [x] Data Loader
 - [ ] Query Fragments
 - [ ] Unions / Intersections
 - [ ] Pagination / Relay compliance
-- [ ] Authentication / Authorization
+- [x] Authentication / Authorization
 - [ ] Hooking it up to a real database / Context
 - [ ] Custom Scalar Types
 - [ ] Subscriptions

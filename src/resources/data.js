@@ -9,25 +9,36 @@ const authors = []
 const authorsIndex = {}
 
 exports.getBooks = () => books
-exports.getBook = (id) => booksIndex[id]
-exports.getBooksByAuthor = (authorId) => {
-  return books.filter((book) => book.authorId === authorId)
+exports.getBook = id => booksIndex[id]
+exports.getBooksByAuthor = authorId => {
+  return books.filter(book => book.authorId === authorId)
 }
-exports.createBook = (obj) => {
+exports.createBook = obj => {
   obj.id = `${autoId++}`
   books.push(obj)
   booksIndex[obj.id] = obj
   return obj
 }
 
-exports.getAuthors = () => authors
-exports.getAuthor = (id) => authorsIndex[id]
-exports.createAuthor = (obj) => {
+exports.getAuthors = user => {
+  if (!user.perms.includes('authors')) {
+    throw new Error('Get Out you heathen')
+  }
+  return authors
+}
+exports.getAuthor = (id, user) => {
+  console.log('Such load much slow:', id)
+  if (!user.perms.includes('author')) {
+    throw new Error('Get Out you heathen')
+  }
+  return authorsIndex[id]
+}
+exports.createAuthor = obj => {
   obj.id = `${autoId++}`
   authors.push(obj)
   authorsIndex[obj.id] = obj
   return obj
-}
+};
 
 // Seed the database
 (() => {
@@ -37,11 +48,11 @@ exports.createAuthor = (obj) => {
   })
   exports.createBook({
     title: 'How GraphQL changed the world',
-    authorId: author.id,
+    authorId: '58f9042b0443288277c6363f',
     isbn: '1337',
     pageCount: 42,
     rating: 5,
     published: true,
-    tags: [ 'graphql' ]
+    tags: ['graphql']
   })
 })()

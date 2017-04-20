@@ -28,10 +28,10 @@ exports.schema = gql`
 exports.resolvers = {
   Query: {
     authors (obj, args, ctx) {
-      return data.getAuthors()
+      return data.getAuthors(ctx.user)
     },
     author (obj, args, ctx) {
-      return data.getAuthor(args.id)
+      return ctx.authorsLoader.load(args.id)
     }
   },
   Mutation: {
