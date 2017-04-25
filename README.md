@@ -36,14 +36,17 @@ Then open up [http://localhost:8000/graphiql](http://localhost:8000/graphiql)
 _Not in any particular order_
 
 - [x] Data Loader
-- [ ] Query Fragments
-- [ ] Unions / Intersections
+- [x] Query Fragments
+- [x] Unions / Interfaces
 - [ ] Pagination / Relay compliance
 - [x] Authentication / Authorization
-- [ ] Hooking it up to a real database / Context
-- [ ] Custom Scalar Types
+- [x] Hooking it up to a real database / Context
+- [x] Custom Scalar Types - [Use Libs](http://dev.apollodata.com/tools/graphql-tools/scalars.html#Using-a-package)
 - [ ] Subscriptions
-- [ ] Deprecation (directives)
-- [ ] Custom Error Validation
+- [ ] Deprecation
+- [x] Directives
+- [x] Custom Error Validation
 - [ ] Migrate REST to GraphQL and vice versa
+- [ ] Mocking
+- [ ] Testing
 - [ ] Usage on client

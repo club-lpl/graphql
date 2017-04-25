@@ -44,6 +44,18 @@ app.use('/graphql', [
         return authors
       }),
       user
+    },
+    formatError (error) {
+      if (error.message === 'NotFound') {
+        console.log(error.stack)
+        return {
+          message: 'Unauthorized',
+          locations: error.locations,
+          stack: error.stack,
+          path: error.path
+        }
+      }
+      return error
     }
   }))
 ])
