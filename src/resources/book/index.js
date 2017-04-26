@@ -1,7 +1,27 @@
 'use strict'
 
 const { stripIndent: gql } = require('common-tags')
-const data = require('../data')
+const _ = require('lodash')
+const DataLoader = require('dataloader')
+const mongodb = require('mongodb')
+
+exports.context = req => {
+  const booksCollection = req.db.collection('books')
+  const Book = new DataLoader(async ids => {
+    const objectIds = ids.map(mongodb.ObjectID)
+    const books = await booksCollection
+      .find({ _id: { $in: objectIds } })
+      .toArray()
+
+    books.sort((a, b) => (_.findIndex(ids, a) > _.findIndex(ids, b) ? 1 : -1))
+    return books
+  })
+
+  return {
+    booksCollection,
+    Book
+  }
+}
 
 exports.schema = gql`
   # ## Get rekt
@@ -17,29 +37,37 @@ exports.schema = gql`
     rating: Int
     published: Boolean
     tags: [String]
-    type: String
+    type: LiteratureType!
   }
 
   type Novel implements Literature {
     id: ID!
     title: String!
-    genre: String!
-    type: String
+    genre: String
+    author: Author
+    type: LiteratureType!
   }
 
   interface Literature {
     id: ID!
     title: String!
+    author: Author
+    type: LiteratureType!
+  }
+
+  enum LiteratureType {
+    Novel
+    Book
   }
 
   extend type Query {
-    books: [Book]
+    literature: [Literature]
     book(id: ID!): Book
     literature: [Literature]
   }
 
   extend type Mutation {
-    createBook(
+    createLiterature(
       title: String!
       authorId: ID!
       isbn: String
@@ -47,57 +75,42 @@ exports.schema = gql`
       rating: Int
       published: Boolean
       tags: [String]
-    ): Book
+      type: LiteratureType!
+      genre: String
+    ): Literature
   }
 `
 
 exports.resolvers = {
   Query: {
-    books (obj, args, ctx) {
-      return data.getBooks()
+    literature (obj, args, ctx) {
+      return ctx.booksCollection.find({}).toArray()
     },
     book (obj, args, ctx) {
-      return data.getBook(args.id, ctx.user)
-    },
-    literature (obj, args, ctx) {
-      return [
-        {
-          id: 13,
-          title: 'Best Book',
-          isbn: '123333',
-          type: 'Book'
-        },
-        {
-          id: 15,
-          title: 'Best Book',
-          type: 'Book'
-        },
-        {
-          id: 14,
-          title: 'Best Novel',
-          genre: 'Horror',
-          type: 'Novel'
-        }
-      ]
+      return ctx.Book.load(args.id)
     }
   },
   Mutation: {
-    createBook (obj, args, ctx) {
-      return data.createBook(args)
+    async createLiterature (obj, args, ctx) {
+      const documentToInsert = Object.assign({}, args, {
+        authorId: mongodb.ObjectID(args.authorId)
+      })
+      const { ops: [document] } = await ctx.booksCollection.insertOne(
+        documentToInsert
+      )
+      return document
     }
   },
   Book: {
+    id: obj => obj._id,
     author (obj, args, ctx) {
-      return ctx.authorsLoader.load(obj.authorId)
-    },
-
-    rating (obj, args, ctx) {
-      return obj.rating
-    },
-
-    isbn (obj, args, ctx) {
-      if (!obj.isbn) throw new Error('NotFound')
-      return obj.isbn
+      return ctx.Author.load(obj.authorId.toString())
+    }
+  },
+  Novel: {
+    id: obj => obj._id,
+    author (obj, args, ctx) {
+      return ctx.Author.load(obj.authorId.toString())
     }
   },
   Literature: {

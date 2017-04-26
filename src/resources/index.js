@@ -3,6 +3,7 @@
 const { stripIndent: gql } = require('common-tags')
 const { merge } = require('lodash')
 const { makeExecutableSchema } = require('graphql-tools')
+const { graphqlExpress } = require('graphql-server-express')
 const author = require('./author')
 const book = require('./book')
 
@@ -34,15 +35,12 @@ const rootResolvers = {
   }
 }
 
-module.exports = makeExecutableSchema({
-  typeDefs: [
-    rootSchema,
-    author.schema,
-    book.schema
-  ],
-  resolvers: merge(
-    rootResolvers,
-    author.resolvers,
-    book.resolvers
-  )
+const schema = makeExecutableSchema({
+  typeDefs: [rootSchema, author.schema, book.schema],
+  resolvers: merge(rootResolvers, author.resolvers, book.resolvers)
 })
+
+module.exports = graphqlExpress(req => ({
+  schema,
+  context: merge({}, author.context(req), book.context(req))
+}))
