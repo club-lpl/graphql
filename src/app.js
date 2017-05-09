@@ -3,7 +3,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const { graphiqlExpress } = require('graphql-server-express')
-const graphql = require('./resources')
+const { graphqlHandler } = require('./resources')
 const mongodb = require('mongodb')
 const cors = require('cors')
 
@@ -22,11 +22,12 @@ app.use(async (req, res, next) => {
   return next()
 })
 
-app.use('/graphql', [bodyParser.json(), graphql])
+app.use('/graphql', [bodyParser.json(), graphqlHandler])
 app.use(
   '/graphiql',
   graphiqlExpress({
-    endpointURL: '/graphql'
+    endpointURL: '/graphql',
+    subscriptionsEndpoint: 'ws://localhost:8000/subscriptions'
   })
 )
 

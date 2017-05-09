@@ -4,6 +4,7 @@ const { stripIndent: gql } = require('common-tags')
 const _ = require('lodash')
 const DataLoader = require('dataloader')
 const mongodb = require('mongodb')
+const pubsub = require('../pubsub')
 
 exports.context = req => {
   const authorsCollection = req.db.collection('authors')
@@ -45,6 +46,10 @@ exports.schema = gql`
       lastName: String!
     ): Author
   }
+
+  extend type Subscription {
+    authorCreated(name: String): Author
+  }
 `
 
 exports.resolvers = {
@@ -59,8 +64,12 @@ exports.resolvers = {
   Mutation: {
     async createAuthor (obj, args, ctx) {
       const { ops: [document] } = await ctx.authorsCollection.insertOne(args)
+      pubsub.publish('authorCreated', document)
       return document
     }
+  },
+  Subscription: {
+    authorCreated: obj => obj
   },
   Author: {
     id: obj => obj._id,
@@ -69,6 +78,23 @@ exports.resolvers = {
     },
     literature (obj, args, ctx) {
       return ctx.booksCollection.find({ authorId: obj._id }).toArray()
+    }
+  }
+}
+
+exports.subscriptionSetup = {
+  authorCreated: (options, args) => {
+    return {
+      authorCreated: {
+        filter: author => {
+          if (!args.name) return true
+          const nameMatcher = new RegExp(`${args.name}`, 'i')
+          return (
+            nameMatcher.test(author.firstName) ||
+            nameMatcher.test(author.lastName)
+          )
+        }
+      }
     }
   }
 }
